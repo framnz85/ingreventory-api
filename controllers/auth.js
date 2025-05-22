@@ -1,40 +1,41 @@
-const User = require('../models/User');
-const Store = require('../models/Store');
-const jwt = require('jsonwebtoken');
+const User = require("../models/User");
+const Store = require("../models/Store");
+const jwt = require("jsonwebtoken");
 
 // Helper function to generate JWT
 // Make sure your generateToken function is using the environment variable
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: '30d'
+    expiresIn: "30d",
   });
 };
 
 // Register a new user and store
 exports.register = async (req, res) => {
   try {
-    const { 
+    const {
       // User details
-      email, 
-      password, 
-      firstName, 
+      email,
+      password,
+      firstName,
       lastName,
-      
+
       // Store details
       storeName,
       storeAddress,
       storePhone,
       storeEmail,
       businessType,
-      taxId
+      currency,
+      currencyCode,
     } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'User with this email already exists' 
+      return res.status(400).json({
+        success: false,
+        message: "User with this email already exists",
       });
     }
 
@@ -45,7 +46,12 @@ exports.register = async (req, res) => {
       phone: storePhone,
       email: storeEmail || email, // Use user email as fallback
       businessType,
-      taxId
+      slug: storeName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, ""), // Generate slug from store name
+      currency: currency || "$", // Default to $ if not provided
+      currencyCode: currencyCode || "USD", // Default to USD if not provided
     });
 
     // Save store to database
@@ -57,8 +63,8 @@ exports.register = async (req, res) => {
       password,
       firstName,
       lastName,
-      role: 'admin', // First user is admin by default
-      store: savedStore._id
+      role: "admin", // First user is admin by default
+      store: savedStore._id,
     });
 
     // Save user to database
@@ -75,14 +81,14 @@ exports.register = async (req, res) => {
       success: true,
       token,
       user: userData,
-      store: savedStore
+      store: savedStore,
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error during registration',
-      error: error.message
+    console.error("Registration error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during registration",
+      error: error.message,
     });
   }
 };
@@ -93,22 +99,22 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     // Find user by email
-    const user = await User.findOne({ email }).populate('store');
-    
+    const user = await User.findOne({ email }).populate("store");
+
     // Check if user exists
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid email or password' 
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
       });
     }
 
     // Check if password is correct
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid email or password' 
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
       });
     }
 
@@ -126,14 +132,14 @@ exports.login = async (req, res) => {
     res.status(200).json({
       success: true,
       token,
-      user: userData
+      user: userData,
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error during login',
-      error: error.message
+    console.error("Login error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during login",
+      error: error.message,
     });
   }
 };
@@ -151,27 +157,27 @@ exports.registerCustomer = async (req, res) => {
 
     // Validate required fields
     if (!firstName || !lastName || !email || !password || !storeId) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Please provide all required fields' 
+        message: "Please provide all required fields",
       });
     }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'User already exists with this email' 
+        message: "User already exists with this email",
       });
     }
 
     // Verify store exists
     const store = await Store.findById(storeId);
     if (!store) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'Store not found' 
+        message: "Store not found",
       });
     }
 
@@ -181,8 +187,8 @@ exports.registerCustomer = async (req, res) => {
       lastName,
       email,
       password,
-      role: 'user', // Changed from 'customer' to 'user' to match valid enum values
-      store: storeId
+      role: "user", // Changed from 'customer' to 'user' to match valid enum values
+      store: storeId,
     });
 
     // Save user - password hashing happens in the User model
@@ -199,14 +205,87 @@ exports.registerCustomer = async (req, res) => {
       success: true,
       token,
       user: userData,
-      store: store
+      store: store,
     });
   } catch (err) {
-    console.error('Error registering customer:', err.message);
-    res.status(500).json({ 
+    console.error("Error registering customer:", err.message);
+    res.status(500).json({
       success: false,
-      message: 'Server error during customer registration',
-      error: err.message
+      message: "Server error during customer registration",
+      error: err.message,
     });
   }
+};
+
+exports.updateUser = async (req, res) => {
+  const { firstName, lastName, phone, address, city, state, zipCode } =
+    req.body;
+
+  // Find user by id
+  let user = await User.findById(req.params.id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  // Update fields
+  user.firstName = firstName || user.firstName;
+  user.lastName = lastName || user.lastName;
+  user.phone = phone || user.phone;
+  user.address = address || user.address;
+  user.city = city || user.city;
+  user.state = state || user.state;
+  user.zipCode = zipCode || user.zipCode;
+
+  // Save updated user
+  const updatedUser = await user.save();
+
+  res.status(200).json({
+    success: true,
+    data: {
+      _id: updatedUser._id,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      phone: updatedUser.phone,
+      address: updatedUser.address,
+      city: updatedUser.city,
+      state: updatedUser.state,
+      zipCode: updatedUser.zipCode,
+    },
+  });
+};
+
+// @desc    Update user password
+// @route   PUT /api/users/:id/password
+// @access  Private
+exports.updatePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  // Find user by id with password
+  const user = await User.findById(req.params.id).select("+password");
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  // Check if current password matches
+  const isMatch = await user.comparePassword(currentPassword);
+
+  if (!isMatch) {
+    res.status(401);
+    throw new Error("Current password is incorrect");
+  }
+
+  // Update password
+  user.password = newPassword;
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password updated successfully",
+  });
 };

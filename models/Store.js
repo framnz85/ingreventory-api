@@ -36,18 +36,26 @@ const storeSchema = new mongoose.Schema({
   },
   businessType: {
     type: String,
-    enum: ["restaurant", "cafe", "bakery", "grocery", "other"],
     required: true,
-  },
-  taxId: {
-    type: String,
-    trim: true,
   },
   backgroundImage: {
     type: String,
   },
   logoImage: {
     type: String,
+  },
+  paymentMethod: {
+    type: String,
+    default: "",
+  },
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "completed"],
+    default: "pending",
+  },
+  referenceNumber: {
+    type: String,
+    default: "",
   },
   createdAt: {
     type: Date,

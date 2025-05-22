@@ -32,11 +32,16 @@ exports.updateStore = async (req, res) => {
       storeId,
       {
         $set: {
+          name: updateData.name,
+          slug: updateData.slug,
           address: updateData.address,
           currency: updateData.currency,
           currencyCode: updateData.currencyCode,
           backgroundImage: updateData.backgroundImage,
           logoImage: updateData.logoImage,
+          paymentMethod: updateData.paymentMethod,
+          referenceNumber: updateData.referenceNumber,
+          paymentStatus: updateData.paymentStatus,
         },
       },
       { new: true }

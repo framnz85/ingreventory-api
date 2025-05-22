@@ -39,7 +39,8 @@ exports.createOrder = async (req, res) => {
 // Get all orders
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
+    const { storeId } = req.query;
+    const orders = await Order.find({ storeId }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -59,7 +60,10 @@ exports.getAllOrders = async (req, res) => {
 exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
+    const storeId = req.params.storeId;
+    const orders = await Order.find({ userId, storeId }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json({
       success: true,
@@ -124,7 +128,10 @@ exports.getOrderById = async (req, res) => {
 exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
+    const storeId = req.params.storeId;
+    const orders = await Order.find({ userId, storeId }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json({
       success: true,

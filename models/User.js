@@ -29,6 +29,21 @@ const userSchema = new mongoose.Schema({
     enum: ["admin", "manager", "staff", "user"],
     default: "admin",
   },
+  phone: {
+    type: String,
+  },
+  address: {
+    type: String,
+  },
+  city: {
+    type: String,
+  },
+  state: {
+    type: String,
+  },
+  zipCode: {
+    type: String,
+  },
   store: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Store",

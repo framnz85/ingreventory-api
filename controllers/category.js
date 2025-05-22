@@ -6,6 +6,7 @@ const Category = require("../models/Category");
 // @access  Public
 exports.getCategories = async (req, res) => {
   try {
+    const { storeId } = req.query;
     let query;
 
     // Copy req.query
@@ -27,7 +28,7 @@ exports.getCategories = async (req, res) => {
     );
 
     // Finding resource
-    query = Category.find(JSON.parse(queryStr));
+    query = Category.find({ ...JSON.parse(queryStr), storeId });
 
     // Select Fields
     if (req.query.select) {

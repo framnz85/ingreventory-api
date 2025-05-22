@@ -3,7 +3,9 @@ const Ingredient = require("../models/Ingredient");
 // Get all ingredients
 exports.getIngredients = async (req, res) => {
   try {
-    const ingredients = await Ingredient.find().sort({ name: 1 });
+    const { storeId } = req.query;
+
+    const ingredients = await Ingredient.find({ storeId }).sort({ name: 1 });
     res.json(ingredients);
   } catch (err) {
     console.error(err.message);

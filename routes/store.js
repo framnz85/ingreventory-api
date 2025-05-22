@@ -24,6 +24,8 @@ router.post(
       // Delete the existing image if it exists
       if (store.backgroundImage) {
         await deleteExistingImage(store.backgroundImage);
+      }
+      if (req.file.location) {
         await Store.findByIdAndUpdate(
           req.params.storeId,
           {
@@ -52,6 +54,8 @@ router.post(
       // Delete the existing image if it exists
       if (store.logoImage) {
         await deleteExistingImage(store.logoImage);
+      }
+      if (req.file.location) {
         await Store.findByIdAndUpdate(
           req.params.storeId,
           {

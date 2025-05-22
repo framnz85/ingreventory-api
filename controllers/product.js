@@ -5,7 +5,14 @@ const { DeleteObjectCommand } = require("@aws-sdk/client-s3");
 // Get all products
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.find({}).populate("category", "name slug");
+    const { storeId } = req.query;
+    // Filter products by store ID if provided
+    const query = storeId ? { store: storeId } : {};
+
+    const products = await Product.find(query).populate(
+      "category",
+      "name slug"
+    );
     res.json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -15,12 +22,15 @@ exports.getProducts = async (req, res) => {
 // Add this new controller method for pagination
 exports.getProductsByPage = async (req, res) => {
   try {
-    const { page = 1, limit = 3, category } = req.query;
+    const { page = 1, limit = 3, category, storeId } = req.query;
     const skip = (page - 1) * limit;
 
     let query = {};
     if (category.name && category.name !== "All") {
       query.category = category._id;
+    }
+    if (storeId) {
+      query.storeId = storeId;
     }
 
     const products = await Product.find(query)
