@@ -14,6 +14,7 @@ const storeSchema = new mongoose.Schema({
     index: true,
     trim: true,
   },
+  description: { type: String },
   address: {
     street: String,
     city: String,

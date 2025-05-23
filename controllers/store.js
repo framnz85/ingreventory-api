@@ -34,6 +34,7 @@ exports.updateStore = async (req, res) => {
         $set: {
           name: updateData.name,
           slug: updateData.slug,
+          description: updateData.description,
           address: updateData.address,
           currency: updateData.currency,
           currencyCode: updateData.currencyCode,

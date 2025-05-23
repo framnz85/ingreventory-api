@@ -6,77 +6,64 @@ const Category = require("../models/Category");
 // @access  Public
 exports.getCategories = async (req, res) => {
   try {
-    const { storeId } = req.query;
-    let query;
-
-    // Copy req.query
+    // Copy req.query and remove special query parameters
     const reqQuery = { ...req.query };
-
-    // Fields to exclude
     const removeFields = ["select", "sort", "page", "limit"];
-
-    // Loop over removeFields and delete them from reqQuery
     removeFields.forEach((param) => delete reqQuery[param]);
 
-    // Create query string
+    // Create query string with MongoDB operators
     let queryStr = JSON.stringify(reqQuery);
-
-    // Create operators ($gt, $gte, etc)
     queryStr = queryStr.replace(
       /\b(gt|gte|lt|lte|in)\b/g,
       (match) => `$${match}`
     );
 
-    // Finding resource
-    query = Category.find({ ...JSON.parse(queryStr), storeId });
+    // Parse query and add store filter
+    const queryObj = JSON.parse(queryStr);
 
-    // Select Fields
+    // Build the base query
+    let query = Category.find(queryObj);
+
+    // Apply field selection if specified
     if (req.query.select) {
       const fields = req.query.select.split(",").join(" ");
       query = query.select(fields);
     }
 
-    // Sort
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(",").join(" ");
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort("-createdAt");
-    }
+    // Apply sorting if specified, default to newest first
+    const sortBy = req.query.sort
+      ? req.query.sort.split(",").join(" ")
+      : "-createdAt";
+    query = query.sort(sortBy);
 
-    // Pagination
+    // Apply pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 25;
     const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    const total = await Category.countDocuments(JSON.parse(queryStr));
 
+    // Get total count for pagination
+    const total = await Category.countDocuments(queryObj);
+
+    // Apply skip and limit to query
     query = query.skip(startIndex).limit(limit);
 
     // Populate virtual fields
     query = query.populate("productCount");
 
-    // Executing query
+    // Execute query
     const categories = await query;
 
-    // Pagination result
+    // Build pagination object
     const pagination = {};
-
-    if (endIndex < total) {
-      pagination.next = {
-        page: page + 1,
-        limit,
-      };
-    }
-
     if (startIndex > 0) {
-      pagination.prev = {
-        page: page - 1,
-        limit,
-      };
+      pagination.prev = { page: page - 1, limit };
+    }
+    if (startIndex + categories.length < total) {
+      pagination.next = { page: page + 1, limit };
     }
 
-    res.status(200).json({
+    // Return successful response
+    return res.status(200).json({
       success: true,
       count: categories.length,
       pagination,
@@ -84,9 +71,10 @@ exports.getCategories = async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching categories:", err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: "Server error",
+      message: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
 };

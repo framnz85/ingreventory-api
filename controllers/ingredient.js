@@ -5,7 +5,9 @@ exports.getIngredients = async (req, res) => {
   try {
     const { storeId } = req.query;
 
-    const ingredients = await Ingredient.find({ storeId }).sort({ name: 1 });
+    const ingredients = await Ingredient.find({ store: storeId }).sort({
+      name: 1,
+    });
     res.json(ingredients);
   } catch (err) {
     console.error(err.message);
