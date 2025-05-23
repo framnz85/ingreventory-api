@@ -9,10 +9,10 @@ const OrderSchema = new mongoose.Schema({
     phone: { type: String, required: true },
   },
   shippingAddress: {
-    address: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    zipCode: { type: String, required: true },
+    address: { type: String },
+    city: { type: String },
+    state: { type: String },
+    zipCode: { type: String },
   },
   paymentMethod: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
   items: [
