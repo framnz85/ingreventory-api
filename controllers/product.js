@@ -58,7 +58,7 @@ exports.getProductsByPage = async (req, res) => {
 // Update the createProduct function to include ingredients
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, cost, price, category, store } = req.body;
+    const { name, slug, description, cost, price, category, store } = req.body;
     let ingredients = [];
     let finaladdonTypes = [];
     let finalAddons = [];
@@ -119,6 +119,7 @@ exports.createProduct = async (req, res) => {
 
     const product = await new Product({
       name,
+      slug,
       description,
       cost,
       price,
@@ -150,6 +151,7 @@ exports.updateProduct = async (req, res) => {
   try {
     const {
       name,
+      slug,
       description,
       cost,
       price,
@@ -166,6 +168,7 @@ exports.updateProduct = async (req, res) => {
       req.params.id,
       {
         name,
+        slug,
         description,
         cost,
         price,
@@ -259,6 +262,19 @@ exports.getProduct = async (req, res) => {
     res.status(400).json({
       err: err.message,
     });
+  }
+};
+
+// Get product by slug
+exports.getProductBySlug = async (req, res) => {
+  try {
+    const product = await Product.findOne({ slug: req.params.slug });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 

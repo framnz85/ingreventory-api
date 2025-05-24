@@ -6,6 +6,7 @@ const {
   createProduct,
   uploadProductImage,
   getProduct,
+  getProductBySlug,
   updateProduct,
   deleteProduct,
   deleteProductImage,
@@ -19,6 +20,8 @@ router.get("/products/page", getProductsByPage);
 
 // Get a single product
 router.get("/products/:id", getProduct);
+
+router.get("/products/slug/:slug", getProductBySlug);
 
 // Create a product
 router.post("/products/:storeId", upload.single("image"), createProduct);
