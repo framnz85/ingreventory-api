@@ -10,19 +10,9 @@ require("dotenv").config();
 const app = express();
 
 app.use(morgan("dev"));
-app.use(express.json({ limit: "10mb" }));
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://ingreventory.com",
-      "https://www.ingreventory.com",
-    ], // Add your frontend URLs
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.raw({ limit: "50mb" }));
+app.use(cors());
 
 readdirSync("./routes").map((file) =>
   app.use("/" + process.env.API_ROUTES, require("./routes/" + file))
