@@ -11,7 +11,18 @@ const app = express();
 
 app.use(morgan("dev"));
 app.use(express.json({ limit: "2mb" }));
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://ingreventory.com",
+      "https://www.ingreventory.com",
+    ], // Add your frontend URLs
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 readdirSync("./routes").map((file) =>
   app.use("/" + process.env.API_ROUTES, require("./routes/" + file))
