@@ -11,7 +11,6 @@ const productSchema = new mongoose.Schema(
     slug: {
       type: String,
       lowercase: true,
-      unique: true,
       index: true,
       trim: true,
     },
@@ -93,6 +92,8 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+productSchema.index({ slug: 1, store: 1 }, { unique: true });
 
 const Product = conn.model("Product", productSchema);
 

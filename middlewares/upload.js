@@ -96,7 +96,7 @@ const upload = multer({
     cb(new Error("Only image files are allowed!"));
   },
   limits: {
-    fileSize: 50 * 1024 * 1024, // 5MB file size limit
+    fileSize: 10 * 1024 * 1024,
   },
 });
 const uploadPaymentImg = multer({
@@ -133,7 +133,7 @@ const uploadPaymentImg = multer({
     cb(new Error("Only image files are allowed!"));
   },
   limits: {
-    fileSize: 50 * 1024 * 1024, // 5MB file size limit
+    fileSize: 10 * 1024 * 1024,
   },
 });
 

@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const slugify = require("slugify");
 const conn = require("../dbconnect/ingreventory");
 
 const CategorySchema = new mongoose.Schema(
@@ -12,7 +11,6 @@ const CategorySchema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      unique: true,
       lowercase: true,
     },
     description: {
@@ -43,6 +41,8 @@ CategorySchema.virtual("productCount", {
   foreignField: "category",
   count: true,
 });
+
+CategorySchema.index({ slug: 1, store: 1 }, { unique: true });
 
 const Ingredient = conn.model("Category", CategorySchema);
 
