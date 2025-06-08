@@ -39,7 +39,7 @@ exports.sendPurchase = async (req, res) => {
           attribution_share: "0.3",
         },
         custom_data: {
-          content_name: "Cosmic Clavstore",
+          content_name: "Ingreventory",
           content_ids: "123456789",
           content_type: "product",
           currency: userData.currency,
@@ -55,7 +55,7 @@ exports.sendPurchase = async (req, res) => {
 
   try {
     const response = await axios.post(
-      `https://graph.facebook.com/v18.0/${pixelId}/events`,
+      `https://graph.facebook.com/${graphApiVer}/${pixelId}/events`,
       data,
       { params: { access_token: accessToken } }
     );
