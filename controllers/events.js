@@ -53,8 +53,6 @@ exports.sendPurchase = async (req, res) => {
     ],
   };
 
-  console.log("Sending to Facebook CAPI:", JSON.stringify(data, null, 2));
-
   try {
     const response = await axios.post(
       `https://graph.facebook.com/${graphApiVer}/${pixelId}/events`,
@@ -99,8 +97,6 @@ exports.sendAnyEvent = async (req, res) => {
       },
     ],
   };
-
-  console.log("Sending to Facebook CAPI:", JSON.stringify(data, null, 2));
 
   try {
     const response = await axios.post(
