@@ -57,7 +57,7 @@ exports.getAllOrders = async (req, res) => {
 };
 
 // Get orders by user ID
-exports.getUserOrders = async (req, res) => {
+exports.getUserOrder = async (req, res) => {
   try {
     const userId = req.params.userId;
     const storeId = req.params.storeId;
@@ -128,7 +128,9 @@ exports.getOrderById = async (req, res) => {
 exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const storeId = req.params.storeId;
+    const storeId = req.query.storeId;
+    console.log(userId);
+    console.log(storeId);
     const orders = await Order.find({ userId, storeId }).sort({
       createdAt: -1,
     });

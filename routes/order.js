@@ -9,7 +9,7 @@ router.post("/order", order.createOrder);
 router.get("/orders", order.getAllOrders);
 
 // Get orders by user ID
-router.get("/user/:userId", order.getUserOrders);
+router.get("/user/:userId", order.getUserOrder);
 
 // Get orders by store ID
 router.get("/store/:storeId", order.getStoreOrders);
