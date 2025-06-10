@@ -32,7 +32,7 @@ exports.sendPurchase = async (req, res) => {
           client_user_agent: userData.userAgent,
           fbc: userData.fbc,
           fbp: userData.fbp,
-          external_id: userData.externalID,
+          external_id: hashData(userData.externalID),
           client_ip_address: userData.ip,
         },
         attribution_data: {
@@ -52,6 +52,8 @@ exports.sendPurchase = async (req, res) => {
       },
     ],
   };
+
+  console.log("Sending to Facebook CAPI:", JSON.stringify(data, null, 2));
 
   try {
     const response = await axios.post(
@@ -90,13 +92,15 @@ exports.sendAnyEvent = async (req, res) => {
           client_user_agent: user_data.userAgent,
           fbc: user_data.fbc,
           fbp: user_data.fbp,
-          external_id: user_data.externalID,
+          external_id: hashData(user_data.externalID),
           client_ip_address: user_data.ip,
         },
         ...rest,
       },
     ],
   };
+
+  console.log("Sending to Facebook CAPI:", JSON.stringify(data, null, 2));
 
   try {
     const response = await axios.post(
