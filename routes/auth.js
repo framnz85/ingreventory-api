@@ -11,6 +11,11 @@ router.post("/auth/register-customer", authController.registerCustomer);
 // Login route
 router.post("/auth/login", authController.login);
 
+// Forgot password
+router.post("/auth/forgot-password", authController.forgotPassword);
+
+router.post("/auth/reset-password", authController.resetPassword);
+
 // Update user profile
 router.put("/users/:id", authController.updateUser);
 

@@ -289,3 +289,157 @@ exports.updatePassword = async (req, res) => {
     message: "Password updated successfully",
   });
 };
+
+const addSubscriber = async (user) => {
+  const url = new URL("https://api.sender.net/v2/subscribers");
+
+  let headers = {
+    Authorization: "Bearer " + process.env.SENDER_NET_API_KEY,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+
+  let data = {
+    email: user.email,
+    firstname: user.firstName,
+    lastname: user.lastName,
+    groups: ["dB9pnx"],
+    trigger_automation: false,
+  };
+
+  const result = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(data),
+  }).then((response) => response.json());
+
+  return result.success;
+};
+
+const executeCampaign = async (code, user) => {
+  let url = new URL("https://api.sender.net/v2/campaigns");
+
+  let headers = {
+    Authorization: "Bearer " + process.env.SENDER_NET_API_KEY,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+
+  let data = {
+    title: "Password Reset Code",
+    subject: "Your Password Reset Code",
+    from: "Ingreventory",
+    reply_to: "admin@ingreventory.com",
+    preheader:
+      "This contains the Password Reset Code for your Forgot Password request",
+    content_type: "text",
+    groups: ["dB9pnx"],
+    content: `<p>Your password reset code is: <b>${code}</b></p>`,
+  };
+
+  const createCampaign = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(data),
+  }).then((response) => response.json());
+
+  if (createCampaign && createCampaign.success) {
+    const campaignId = createCampaign.data.id;
+    url = new URL(`https://api.sender.net/v2/campaigns/${campaignId}/send`);
+    const sendCampaign = await fetch(url, {
+      method: "POST",
+      headers,
+    }).then((response) => response.json());
+    if (sendCampaign && sendCampaign.success) {
+      setTimeout(async () => {
+        url = new URL(
+          `https://api.sender.net/v2/campaigns?ids=[${campaignId}]`
+        );
+        data = {
+          title: "Campaign's title",
+        };
+        await fetch(url, {
+          method: "DELETE",
+          headers,
+          body: JSON.stringify(data),
+        }).then((response) => response.json());
+        deleteUser(user);
+      }, 120000);
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+};
+
+const deleteUser = async (user) => {
+  const url = new URL("https://api.sender.net/v2/subscribers");
+
+  let headers = {
+    Authorization: "Bearer " + process.env.SENDER_NET_API_KEY,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+
+  let data = {
+    subscribers: [user.email],
+  };
+
+  const result = await fetch(url, {
+    method: "DELETE",
+    headers,
+    body: JSON.stringify(data),
+  }).then((response) => response.json());
+  return result.success;
+};
+
+// Forgot Password - Send Verification Code
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+  // Generate a 6-digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  user.passwordResetCode = code;
+  user.passwordResetExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+  await user.save();
+
+  // Send code via Sender.net API
+  try {
+    const addUser = await addSubscriber(user);
+    if (addUser) {
+      await executeCampaign(code, user);
+    }
+    res.json({ success: true, message: "Verification code sent to email" });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to send email",
+      error: err.message,
+    });
+  }
+};
+
+// Reset Password
+exports.resetPassword = async (req, res) => {
+  const { email, code, newPassword } = req.body;
+  const user = await User.findOne({ email, passwordResetCode: code });
+  if (
+    !user ||
+    !user.passwordResetExpires ||
+    user.passwordResetExpires < Date.now()
+  ) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired code" });
+  }
+  user.password = newPassword;
+  user.passwordResetCode = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  res.json({ success: true, message: "Password reset successful" });
+};
