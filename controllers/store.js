@@ -31,19 +31,7 @@ exports.updateStore = async (req, res) => {
     const updatedStore = await Store.findByIdAndUpdate(
       storeId,
       {
-        $set: {
-          name: updateData.name,
-          slug: updateData.slug,
-          description: updateData.description,
-          address: updateData.address,
-          currency: updateData.currency,
-          currencyCode: updateData.currencyCode,
-          backgroundImage: updateData.backgroundImage,
-          logoImage: updateData.logoImage,
-          paymentMethod: updateData.paymentMethod,
-          referenceNumber: updateData.referenceNumber,
-          paymentStatus: updateData.paymentStatus,
-        },
+        $set: updateData,
       },
       { new: true }
     );

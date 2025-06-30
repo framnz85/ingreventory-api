@@ -96,13 +96,13 @@ exports.createUser = async (req, res) => {
 
 // Update user
 exports.updateUser = async (req, res) => {
-  console.log(req.body);
   try {
     const {
       firstName,
       lastName,
       email,
       role,
+      applyDelFee,
       phone,
       address,
       city,
@@ -143,6 +143,7 @@ exports.updateUser = async (req, res) => {
     user.state = state || user.state;
     user.zipCode = zipCode || user.zipCode;
     user.isActive = isActive === "active";
+    user.applyDelFee = applyDelFee;
 
     user.updatedAt = Date.now();
 

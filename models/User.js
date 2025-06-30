@@ -26,8 +26,12 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["admin", "manager", "staff", "user", "kiosk"],
+    enum: ["admin", "manager", "staff", "cashier", "user", "kiosk"],
     default: "admin",
+  },
+  applyDelFee: {
+    type: Boolean,
+    default: true,
   },
   phone: {
     type: String,

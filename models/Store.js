@@ -15,6 +15,7 @@ const storeSchema = new mongoose.Schema({
     trim: true,
   },
   description: { type: String },
+  homeDesc: { type: String },
   address: {
     street: String,
     city: String,
@@ -34,6 +35,9 @@ const storeSchema = new mongoose.Schema({
     required: true,
     trim: true,
     lowercase: true,
+  },
+  deliveryFee: {
+    type: Number,
   },
   businessType: {
     type: String,
