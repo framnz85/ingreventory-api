@@ -6,14 +6,15 @@ const { DeleteObjectCommand } = require("@aws-sdk/client-s3");
 exports.getProducts = async (req, res) => {
   try {
     const { storeId } = req.query;
-    // Filter products by store ID if provided
-    const query = storeId ? { store: storeId } : {};
-
-    const products = await Product.find(query).populate(
-      "category",
-      "name slug"
-    );
-    res.json(products);
+    if (storeId) {
+      const products = await Product.find({ store: storeId }).populate(
+        "category",
+        "name slug"
+      );
+      res.json(products);
+    } else {
+      res.json([]);
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
