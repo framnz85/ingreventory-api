@@ -26,12 +26,9 @@ exports.getProductsByPage = async (req, res) => {
     const { page = 1, limit = 3, category, storeId } = req.query;
     const skip = (page - 1) * limit;
 
-    let query = {};
+    let query = { store: storeId };
     if (category.name && category.name !== "All") {
       query.category = category._id;
-    }
-    if (storeId) {
-      query.storeId = storeId;
     }
 
     const products = await Product.find(query)
