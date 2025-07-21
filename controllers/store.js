@@ -1,4 +1,5 @@
 const Store = require("../models/Store");
+const User = require("../models/User");
 
 // Get store by slug
 exports.getStoreBySlug = async (req, res) => {
@@ -14,6 +15,36 @@ exports.getStoreBySlug = async (req, res) => {
     res.json({ success: true, data: store });
   } catch (error) {
     console.error("Error fetching store by slug:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Get store by ID
+exports.getStoreById = async (req, res) => {
+  try {
+    const store = await Store.findById(req.params.id);
+
+    if (!store) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Store not found" });
+    }
+
+    // Find admin users for this store
+    const adminUsers = await User.find({
+      store: req.params.id,
+      role: "admin",
+    }).select("-password"); // Exclude password field for security
+
+    res.json({
+      success: true,
+      data: {
+        store,
+        adminUsers,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching store by ID:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

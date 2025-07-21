@@ -7,6 +7,9 @@ const Store = require("../models/Store");
 // Get store by slug - public route
 router.get("/stores/slug/:slug", storeController.getStoreBySlug);
 
+// Get store by ID - public route
+router.get("/stores/:id", storeController.getStoreById);
+
 // Other existing routes...
 // For example:
 // router.post("/", auth, storeController.createStore);
