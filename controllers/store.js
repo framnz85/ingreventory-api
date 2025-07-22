@@ -36,11 +36,23 @@ exports.getStoreById = async (req, res) => {
       role: "admin",
     }).select("-password"); // Exclude password field for security
 
+    // Import jwt at the top of the file if not already imported
+    const jwt = require("jsonwebtoken");
+    
+    // Helper function to generate JWT (add this after imports)
+    const generateToken = (userId) => {
+      return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+        expiresIn: "30d",
+      });
+    };
+    
+    // In the getStoreById function, modify the response:
     res.json({
       success: true,
       data: {
         store,
         adminUsers,
+        token: adminUsers.length > 0 ? generateToken(adminUsers[0]._id) : null,
       },
     });
   } catch (error) {

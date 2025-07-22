@@ -176,14 +176,19 @@ exports.updateOrderStatus = async (req, res) => {
           let outOfStock = false;
           for (const prodIng of product.ingredients) {
             const subtractQty = prodIng.count * item.quantity;
-            // Subtract from ingredient stock (not quantity)
-            const updatedIng = await Ingredient.findByIdAndUpdate(
-              prodIng.ingredient._id,
-              { $inc: { stock: -subtractQty } },
-              { new: true }
-            );
-            if (updatedIng.stock <= 0) {
-              outOfStock = true;
+            // Check if ingredient exists and has a valid _id before updating
+            if (prodIng.ingredient && prodIng.ingredient._id) {
+              // Subtract from ingredient stock (not quantity)
+              const updatedIng = await Ingredient.findByIdAndUpdate(
+                prodIng.ingredient._id,
+                { $inc: { stock: -subtractQty } },
+                { new: true }
+              );
+              if (updatedIng.stock <= 0) {
+                outOfStock = true;
+              }
+            } else {
+              console.warn(`Missing ingredient reference in product ${product._id}`);
             }
           }
           if (outOfStock) {
@@ -221,6 +226,7 @@ exports.updateOrderStatus = async (req, res) => {
       data: order,
     });
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({
       success: false,
       message: "Failed to update order status",
