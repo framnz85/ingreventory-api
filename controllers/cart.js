@@ -8,16 +8,24 @@ exports.checkCartIngredients = async (req, res) => {
     let insufficientIngredients = [];
 
     for (const cartItem of cartItems) {
-      const product = await Product.findById(cartItem.productId).populate("ingredients.ingredient");
+      const product = await Product.findById(cartItem.productId).populate(
+        "ingredients.ingredient"
+      );
       if (!product) {
-        return res.status(404).json({ success: false, message: `Product not found: ${cartItem.productId}` });
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message: `Product not found: ${cartItem.productId}`,
+          });
       }
       for (const prodIng of product.ingredients) {
         const requiredQty = prodIng.count * cartItem.quantity;
         // Get the latest stock for this ingredient
         const ingredient = prodIng.ingredient;
+        // Skip this ingredient if it's null or undefined
         if (!ingredient) {
-          return res.status(404).json({ success: false, message: `Ingredient not found for product: ${product.name}` });
+          continue; // Just ignore and move to the next ingredient
         }
         if (ingredient.stock < requiredQty) {
           insufficientIngredients.push({
@@ -25,7 +33,7 @@ exports.checkCartIngredients = async (req, res) => {
             ingredientName: ingredient.name,
             required: requiredQty,
             available: ingredient.stock,
-            product: product.name
+            product: product.name,
           });
         }
       }
@@ -35,13 +43,20 @@ exports.checkCartIngredients = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Insufficient ingredient stock for one or more items.",
-        insufficientIngredients
+        insufficientIngredients,
       });
     }
 
-    return res.status(200).json({ success: true, message: "All ingredients have sufficient stock." });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "All ingredients have sufficient stock.",
+      });
   } catch (error) {
     console.error("Error checking cart ingredients:", error);
-    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
   }
 };
