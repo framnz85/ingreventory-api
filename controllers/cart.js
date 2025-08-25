@@ -12,12 +12,10 @@ exports.checkCartIngredients = async (req, res) => {
         "ingredients.ingredient"
       );
       if (!product) {
-        return res
-          .status(404)
-          .json({
-            success: false,
-            message: `Product not found: ${cartItem.productId}`,
-          });
+        return res.status(404).json({
+          success: false,
+          message: `Product not found: ${cartItem.productId}`,
+        });
       }
       for (const prodIng of product.ingredients) {
         const requiredQty = prodIng.count * cartItem.quantity;
@@ -28,6 +26,8 @@ exports.checkCartIngredients = async (req, res) => {
           continue; // Just ignore and move to the next ingredient
         }
         if (ingredient.stock < requiredQty) {
+          console.log("ingredient stock => ", ingredient);
+          console.log("requiredQty => ", requiredQty);
           insufficientIngredients.push({
             ingredientId: ingredient._id,
             ingredientName: ingredient.name,
@@ -47,12 +47,10 @@ exports.checkCartIngredients = async (req, res) => {
       });
     }
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "All ingredients have sufficient stock.",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "All ingredients have sufficient stock.",
+    });
   } catch (error) {
     console.error("Error checking cart ingredients:", error);
     return res
